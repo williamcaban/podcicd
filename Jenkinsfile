@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     options {
-        // set a timeout of 5 minutes for this pipeline
-        timeout(time: 5, unit: 'MINUTES')
+        // set a timeout of 20 minutes for this pipeline
+        timeout(time: 20, unit: 'MINUTES')
     } //options
 
     environment {
@@ -22,24 +22,46 @@ pipeline {
     }
 
     stages {
-            // stage('CICD Projects'){
-            //     echo "Making sure CI/CD projects exist"
-            //     script {
-            //         openshift.withCluster() {
-            //             openshift.withCredentials('my-priv-token-id'){
-            //                 if (!openshift.selector("projects",CICD_DEV).exists()) {
-            //                     openshift.newProject(CICD_DEV,"--display-name","CI/CD - Dev")
-            //                 }
-            //                 if (!openshift.selector("projects",CICD_STAGE).exists()) {
-            //                     openshift.newProject(CICD_STAGE,"--display-name","CI/CD - Staging")
-            //                 }
-            //                 if (!openshift.selector("projects",CICD_PROD).exists()) {
-            //                     openshift.newProject(CICD_PROD,"--display-name","CI/CD - Prod")
-            //                 }                            
-            //             } // credentials
-            //         } // cluster
-            //     } // script
-            // } // stage - projects
+            stage('CICD Projects'){
+                echo "Making sure CI/CD projects exist"
+                script {
+                    openshift.withCluster() {
+                        echo "Current Pipeline environmentt"
+                        sh 'env | sort'
+
+                        echo "Making sure required CI/CD projects exist"
+                        if (!openshift.selector("projects",CICD_DEV).exists()) {
+                            error "Missing ${CICD_DEV} Project"
+                        } else {
+                            echo "Good! Project ${CICD_DEV} exist"
+                        }
+                        if (!openshift.selector("projects",CICD_STAGE).exists()) {
+                            error "Missing ${CICD_STAGE} Project"
+                        } else {
+                            echo "Good! Project ${CICD_STAGE} exist"
+                        }
+                         if (!openshift.selector("projects",CICD_PROD).exists()) {
+                            error "Missing ${CICD_PROD} Project"
+                        } else {
+                            echo "Good! Project ${CICD_PROD} exist"
+                        } 
+
+                        //echo "Making sure CI/CD projects exist"
+                        // openshift.withCredentials('my-priv-token-id'){
+                        //     if (!openshift.selector("projects",CICD_DEV).exists()) {
+                        //         openshift.newProject(CICD_DEV,"--display-name","CI/CD - Dev")
+                        //     }
+                        //     if (!openshift.selector("projects",CICD_STAGE).exists()) {
+                        //         openshift.newProject(CICD_STAGE,"--display-name","CI/CD - Staging")
+                        //     }
+                        //     if (!openshift.selector("projects",CICD_PROD).exists()) {
+                        //         openshift.newProject(CICD_PROD,"--display-name","CI/CD - Prod")
+                        //     }                            
+                        // } // credentials
+                        
+                    } // cluster
+                } // script
+            } // stage - projects
 
             stage('Build') {
                 steps {
@@ -152,14 +174,6 @@ pipeline {
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
-
-                                // def myProdAppBC = myProdApp.narrow('bc')
-                                // def myProdAppBuilds = myProdAppBC.related('builds')
-                                // timeout (10){ // fail if the build takes more than 10 minutes
-                                //     myProdAppBuilds.untilEach(1) { // wait for a minimum of 1 build
-                                //         return it.object().status.phase == "Complete"
-                                //     }
-                                // }
 
                                 if (openshift.selector("route",APP_NAME).exists()){
                                     echo "Sending the traffic the the latest version"
