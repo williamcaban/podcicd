@@ -10,14 +10,14 @@ pipeline {
         GIT_URL     = "https://github.com/williamcaban/podcicd.git"
         GIT_BRANCH  = "master"
         CONTEXT_DIR = "myapp"
-        CURR_BUILD  = ${currentBUild.number}
-        PREV_BUILD  = ${currentBuild.previousBuild.getNumber()}
-        BUILD_CAUSE = ${currentBuild.rawBuild.getCauses()}
+        CURR_BUILD  = "${currentBUild.number}"
+        PREV_BUILD  = "${currentBuild.previousBuild.getNumber()}"
+        BUILD_CAUSE = "${currentBuild.rawBuild.getCauses()}"
 
         CICD_PRJ    = "cicd"
-        CICD_DEV    = ${CICD_PRJ}+"-dev"
-        CICD_PROD   = ${CICD_PRJ}+"-prod"
-        CICD_STAGE  = ${CICD_PRJ}+"-staging"
+        CICD_DEV    = "${CICD_PRJ}"+"-dev"
+        CICD_PROD   = "${CICD_PRJ}"+"-prod"
+        CICD_STAGE  = "${CICD_PRJ}"+"-staging"
     }
 
     stages {
