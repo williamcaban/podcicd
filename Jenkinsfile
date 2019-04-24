@@ -85,7 +85,7 @@ pipeline {
                     script {
                         openshift.withCluster() {
                                 openshift.withProject() {
-                                    echo sh (script: "curl -I ${APP_NAME}.${openshift.project()}.svc:${SVC_PORT}/healthz", returnStdout: true)
+                                    echo sh (script: "curl -I ${APP_NAME}.${CICD_DEV}.svc:${SVC_PORT}/healthz", returnStdout: true)
                                 } // withProject
                         } // withCluster
                     } // script
