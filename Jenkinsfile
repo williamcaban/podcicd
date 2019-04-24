@@ -13,7 +13,6 @@ pipeline {
         CONTEXT_DIR = "myapp"
         CURR_BUILD  = "${currentBuild.number}"
         PREV_BUILD  = "${currentBuild.previousBuild.getNumber()}"
-        BUILD_CAUSE = "${currentBuild.rawBuild.getCauses()}"
 
         CICD_PRJ    = "cicd"
         CICD_DEV    = "${CICD_PRJ}"+"-dev"
@@ -23,6 +22,25 @@ pipeline {
     }
 
     stages {
+            // stage('CICD Projects'){
+            //     echo "Making sure CI/CD projects exist"
+            //     script {
+            //         openshift.withCluster() {
+            //             openshift.withCredentials('my-priv-token-id'){
+            //                 if (!openshift.selector("projects",CICD_DEV).exists()) {
+            //                     openshift.newProject(CICD_DEV,"--display-name","CI/CD - Dev")
+            //                 }
+            //                 if (!openshift.selector("projects",CICD_STAGE).exists()) {
+            //                     openshift.newProject(CICD_STAGE,"--display-name","CI/CD - Staging")
+            //                 }
+            //                 if (!openshift.selector("projects",CICD_PROD).exists()) {
+            //                     openshift.newProject(CICD_PROD,"--display-name","CI/CD - Prod")
+            //                 }                            
+            //             } // credentials
+            //         } // cluster
+            //     } // script
+            // } // stage - projects
+
             stage('Build') {
                 steps {
                     echo "Sample Build stage using project ${CICD_DEV}"
@@ -117,7 +135,10 @@ pipeline {
 
             stage('Promote to Prod'){
                 steps {
-                    echo "Promote to production"
+                    echo "Promote to production? Witing for human input"
+                    timeout(time:15, unit:'MINUTES'){
+                        input message: "Promote to Production?", ok: "Promote"
+                    }
                     script {
                         openshift.withCluster() {
                             openshift.withProject("${CICD_PROD}") {
@@ -132,11 +153,8 @@ pipeline {
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
                                 if (openshift.selector("route",APP_NAME).exists()){
-                                    // update route
-                                    // def prodRoute = openshift.selector("route",APP_NAME).object()
-                                    // prodRoute.spec.to.name="${APP_NAME}:v${BUILD_NUMBER}"
-                                    // openshift.apply(prodRoute)
-                                    openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}=5%")
+                                    echo "Sending the traffic the the latest version"
+                                    openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}")
                                 } else {
                                     myProdApp.narrow("svc").expose("--name=${APP_NAME}")
                                 }
