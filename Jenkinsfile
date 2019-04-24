@@ -108,7 +108,7 @@ pipeline {
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
-                                myStagingApp.norrow("svc").expose()
+                                myStagingApp.narrow("svc").expose()
                             }
                         }
                     } // script
