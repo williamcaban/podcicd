@@ -80,11 +80,11 @@ pipeline {
             stage('Test') {
 
                 steps {
-                    echo "Test Service is operational and responding"
+                    echo "Testing if 'Service' resource is operational and responding"
                     script {
                         openshift.withCluster() {
                                 openshift.withProject() {
-                                    def check_service = openshift.verifyService(${APP_NAME})
+                                    def check_service = openshift.verifyService("${APP_NAME}")
                                     if (check_service) {
                                         echo "Able to connect to ${APP_NAME}"
                                     } else {
