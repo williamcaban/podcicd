@@ -32,17 +32,23 @@ pipeline {
 
                             echo "Making sure required CI/CD projects exist"
                             if (!openshift.selector("projects",CICD_DEV).exists()) {
-                                error "Missing ${CICD_DEV} Project"
+                                error "Missing ${CICD_DEV} Project or RBAC policy to work with Project"
                             } else {
                                 echo "Good! Project ${CICD_DEV} exist"
                             }
-                            if (!openshift.selector("projects",CICD_STAGE).exists()) {
-                                error "Missing ${CICD_STAGE} Project"
-                            } else {
+                            try {
+                                openshift.selector("projects",CICD_STAGE).exists()
                                 echo "Good! Project ${CICD_STAGE} exist"
+                            } catch (e) {
+                                error "Missing ${CICD_STAGE} Project or RBAC policy to work with Project"
                             }
+                            // if (!openshift.selector("projects",CICD_STAGE).exists()) {
+                            //     error "Missing ${CICD_STAGE} Project or RBAC policy to work with Project"
+                            // } else {
+                            //     echo "Good! Project ${CICD_STAGE} exist"
+                            // }
                             if (!openshift.selector("projects",CICD_PROD).exists()) {
-                                error "Missing ${CICD_PROD} Project"
+                                error "Missing ${CICD_PROD} Project or RBAC policy to work with Project"
                             } else {
                                 echo "Good! Project ${CICD_PROD} exist"
                             } 
