@@ -144,26 +144,28 @@ pipeline {
                             openshift.withProject("${CICD_PROD}") {
                                 echo "Tag Staging Image for Production"
                                 openshift.tag("${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_PROD}/${APP_NAME}:v${BUILD_NUMBER}")
-                                echo "Deploying to project: ${openshift.project()}"
 
+                                echo "Deploying to project: ${openshift.project()}"
                                 def myProdApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
                                     "--name=${APP_NAME}-v${BUILD_NUMBER}", 
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
-                                def myProdAppBC = myProdApp.narrow('bc')
-                                def myProdAppBuilds = myProdAppBC.related('builds')
-                                timeout (10){ // fail if the build takes more than 10 minutes
-                                    myProdAppBuilds.untilEach(1) { // wait for a minimum of 1 build
-                                        return it.object().status.phase == "Complete"
-                                    }
-                                }
+
+                                // def myProdAppBC = myProdApp.narrow('bc')
+                                // def myProdAppBuilds = myProdAppBC.related('builds')
+                                // timeout (10){ // fail if the build takes more than 10 minutes
+                                //     myProdAppBuilds.untilEach(1) { // wait for a minimum of 1 build
+                                //         return it.object().status.phase == "Complete"
+                                //     }
+                                // }
 
                                 if (openshift.selector("route",APP_NAME).exists()){
                                     echo "Sending the traffic the the latest version"
-                                    openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}")
+                                    openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}=100%")
                                 } else {
+                                    echo "Creating new Route"
                                     myProdApp.narrow("svc").expose("--name=${APP_NAME}")
                                 }
 
