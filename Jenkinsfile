@@ -31,10 +31,11 @@ pipeline {
                             sh 'env | sort'
 
                             echo "Making sure required CI/CD projects exist"
-                            if (!openshift.selector("projects",CICD_DEV).exists()) {
-                                error "Missing ${CICD_DEV} Project or RBAC policy to work with Project"
-                            } else {
+                            try {
+                                openshift.selector("projects",CICD_DEV).exists()
                                 echo "Good! Project ${CICD_DEV} exist"
+                            } catch (e) {
+                                error "Missing ${CICD_DEV} Project or RBAC policy to work with Project"
                             }
                             try {
                                 openshift.selector("projects",CICD_STAGE).exists()
@@ -42,29 +43,12 @@ pipeline {
                             } catch (e) {
                                 error "Missing ${CICD_STAGE} Project or RBAC policy to work with Project"
                             }
-                            // if (!openshift.selector("projects",CICD_STAGE).exists()) {
-                            //     error "Missing ${CICD_STAGE} Project or RBAC policy to work with Project"
-                            // } else {
-                            //     echo "Good! Project ${CICD_STAGE} exist"
-                            // }
-                            if (!openshift.selector("projects",CICD_PROD).exists()) {
-                                error "Missing ${CICD_PROD} Project or RBAC policy to work with Project"
-                            } else {
+                            try {
+                                openshift.selector("projects",CICD_PROD).exists()
                                 echo "Good! Project ${CICD_PROD} exist"
-                            } 
-
-                            //echo "Making sure CI/CD projects exist"
-                            // openshift.withCredentials('my-priv-token-id'){
-                            //     if (!openshift.selector("projects",CICD_DEV).exists()) {
-                            //         openshift.newProject(CICD_DEV,"--display-name","CI/CD - Dev")
-                            //     }
-                            //     if (!openshift.selector("projects",CICD_STAGE).exists()) {
-                            //         openshift.newProject(CICD_STAGE,"--display-name","CI/CD - Staging")
-                            //     }
-                            //     if (!openshift.selector("projects",CICD_PROD).exists()) {
-                            //         openshift.newProject(CICD_PROD,"--display-name","CI/CD - Prod")
-                            //     }                            
-                            // } // credentials
+                            } catch (e) {
+                                error "Missing ${CICD_PROD} Project or RBAC policy to work with Project"
+                            }
 
                         } // cluster
                     } // script
@@ -166,7 +150,7 @@ pipeline {
             stage('Promote to Prod'){
                 steps {
                     echo "Promote to production? Witing for human input"
-                    timeout(time:15, unit:'MINUTES'){
+                    timeout(time:10, unit:'MINUTES'){
                         input message: "Promote to Production?", ok: "Promote"
                     }
                     script {

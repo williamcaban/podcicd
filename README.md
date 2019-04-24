@@ -1,6 +1,6 @@
-## Sample Multi Project CI/CD Pipeline
+# Sample Multi Project CI/CD Pipeline
 
-Setup the OpenShift environment with the following Projects:
+- Setup the OpenShift environment with the following Projects:
 
 ```
 oc new-project cicd --description="CI/CD Pipeline Demo"
@@ -9,15 +9,36 @@ oc new-project cicd-prod --description="CI/CD - Prod"
 oc new-project cicd-staging --description="CI/CD - Staging"
 ```
 
-Give `jenkins` Service Account `edit` access to the other Projects
+- Give `jenkins` Service Account `edit` access to the other Projects
+
 ```
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n cicd-dev
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n cicd-prod
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n cicd-staging 
 ```
 
+- Deploy the OpenShift Pipeline from Git repository
 
-## Testing the app in local computer
+```
+oc new-app https://github.com/williamcaban/podcicd.git -n cicd
+```
+
+- After ~10 minutes the Jenkins Master should be ready on the `cicd` Project.
+- Start a new pipeline build (either from GUI or CLI)
+  - From GUI:
+
+    `Application Console` > Project `cicd` > Builds > Pipelines --> click the `Start Pipeline` button
+
+  - From CLI:
+
+    `oc start-build podcicd -n cicd`
+
+- Monitor Jenkins logs and progress from the GUI at `Application Console` > Project `cicd` > Builds > Pipelines
+
+
+## Customizing the Demo App
+
+The demo app included in this repo is quite simple, it returns the Pod name Build ID and the Project. If you like to further customize the demo app, this is how to test/run the app in a local computer:
 
 ```
 python3 -m venv .
