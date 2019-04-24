@@ -133,11 +133,12 @@ pipeline {
                                 )
                                 if (openshift.selector("route",APP_NAME).exists()){
                                     // update route
-                                    def prodRoute = openshift.selector("route",APP_NAME).object()
-                                    prodRoute.spec.to.name="${APP_NAME}:v${BUILD_NUMBER}"
-                                    openshift.apply(prodRoute)
+                                    // def prodRoute = openshift.selector("route",APP_NAME).object()
+                                    // prodRoute.spec.to.name="${APP_NAME}:v${BUILD_NUMBER}"
+                                    // openshift.apply(prodRoute)
+                                    openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}=5%")
                                 } else {
-                                    myProdApp.narrow("svc").expose()
+                                    myProdApp.narrow("svc").expose("--name=${APP_NAME}")
                                 }
 
                             } // project
