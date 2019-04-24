@@ -23,7 +23,7 @@ oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n cicd-stagi
 oc new-app https://github.com/williamcaban/podcicd.git -n cicd
 ```
 
-- After ~10 minutes the Jenkins Master should be ready on the `cicd` Project.
+- After about 10 minutes the Jenkins Master should be ready on the `cicd` Project.
 - Start a new pipeline build (either from GUI or CLI)
   - From GUI:
 
@@ -35,8 +35,17 @@ oc new-app https://github.com/williamcaban/podcicd.git -n cicd
 
 - Monitor Jenkins logs and progress from the GUI at `Application Console` > Project `cicd` > Builds > Pipelines
 
+# Cleaning the environment
+To clean/uninstall the demo delete the projects 
 
-## Customizing the Demo App
+```
+oc delete project cicd-prod
+oc delete project cicd-staging
+oc delete project cicd-dev
+oc delete project cicd
+```
+
+# Customizing the Demo App
 
 The demo app included in this repo is quite simple, it returns the Pod name Build ID and the Project. If you like to further customize the demo app, this is how to test/run the app in a local computer:
 
