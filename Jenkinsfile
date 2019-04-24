@@ -104,7 +104,7 @@ pipeline {
                                 echo "Deploying to project: ${openshift.project()}"
                                 def myStagingApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
-                                    "--name=${APP_NAME}-${BUILD_NUMBER}", 
+                                    "--name=${APP_NAME}:v${BUILD_NUMBER}", 
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
@@ -121,8 +121,26 @@ pipeline {
                     script {
                         openshift.withCluster() {
                             openshift.withProject("${CICD_PROD}") {
+                                echo "Tag Staging Image for Production"
+                                openshift.tag("${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_PROD}/${APP_NAME}:v${BUILD_NUMBER}")
                                 echo "Deploying to project: ${openshift.project()}"
-                            }
+
+                                def myProdApp = openshift.newApp(
+                                    "${APP_NAME}:v${BUILD_NUMBER}",
+                                    "--name=${APP_NAME}:v${BUILD_NUMBER}", 
+                                    "-e BUILD_NUMBER=${CURR_BUILD}", 
+                                    "-e BUILD_ENV=${openshift.project()}"
+                                )
+                                if (openshift.selector("route",APP_NAME).exists()){
+                                    // update route
+                                    def prodRoute = openshift.selector("route",APP_NAME).object()
+                                    prodRoute.spec.to.name="${APP_NAME}:v${BUILD_NUMBER}"
+                                    openshift.apply(prodRoute)
+                                } else {
+                                    myProdApp.narrow("svc").expose()
+                                }
+
+                            } // project
                         }
                     } // script
                 } // steps
