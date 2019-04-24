@@ -30,10 +30,10 @@ pipeline {
                             openshift.withProject("${CICD_DEV}")
                             {
 
-                                if (openshift.selector("bc",APPLICATION_NAME).exists()) {
+                                if (openshift.selector("bc",APP_NAME).exists()) {
                                     echo "Using existing BuildConfig. Running new Build"
-                                    def bc = openshift.startBuild(APPLICATION_NAME)
-                                    openshift.set("env dc/${APPLICATION_NAME} BUILD_NUMBER=${CURR_BUILD}")
+                                    def bc = openshift.startBuild(APP_NAME)
+                                    openshift.set("env dc/${APP_NAME} BUILD_NUMBER=${CURR_BUILD}")
                                     // output build logs to the Jenkins conosole
                                     echo "Logs from build"
                                     def result = bc.logs('-f')
@@ -45,7 +45,7 @@ pipeline {
                                     echo "No proevious BuildConfig. Creating new BuildConfig."
                                     def myNewApp = openshift.newApp (
                                         "${GIT_REPO}#${GIT_BRANCH}", 
-                                        "--name=${APPLICATION_NAME}", 
+                                        "--name=${APP_NAME}", 
                                         "--context-dir=${CONTEXT_DIR}", 
                                         "-e BUILD_NUMBER=${CURR_BUILD}", 
                                         "-e BUILD_ENV=${openshift.project()}"
@@ -64,11 +64,11 @@ pipeline {
                                 } //else
 
                                 echo "Tag Container image with 'build number' as version"
-                                openshift.tag("${APPLICATION_NAME}:latest", "${APPLICATION_NAME}:v${BUILD_NUMBER}")
+                                openshift.tag("${APP_NAME}:latest", "${APP_NAME}:v${BUILD_NUMBER}")
 
                                 echo "Validating Route for Service exist, if Not create Route"
-                                if (!openshift.selector("route",APPLICATION_NAME).exists()) {
-                                    openshift.selector("svc",APPLICATION_NAME).expose()
+                                if (!openshift.selector("route",APP_NAME).exists()) {
+                                    openshift.selector("svc",APP_NAME).expose()
                                 }
 
                             } // project
@@ -84,11 +84,11 @@ pipeline {
                     script {
                         openshift.withCluster() {
                                 openshift.withProject() {
-                                    def check_service = openshift.verifyService(${APPLICATION_NAME})
+                                    def check_service = openshift.verifyService(${APP_NAME})
                                     if (check_service) {
-                                        echo "Able to connect to ${APPLICATION_NAME}"
+                                        echo "Able to connect to ${APP_NAME}"
                                     } else {
-                                        echo "Unable to connect to ${APPLICATION_NAME}"
+                                        echo "Unable to connect to ${APP_NAME}"
                                         currentBuild.result = "TEST_FAIL"
                                         return
                                     }
