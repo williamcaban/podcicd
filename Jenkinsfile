@@ -23,10 +23,10 @@ pipeline {
     stages {
             stage('Build') {
                 steps {
-                    echo "Sample Build stage ..."
+                    echo "Sample Build stage using project ${CICD_DEV}"
                     script {
                         openshift.withCluster() {
-                            openshift.withProject(${CICD_DEV})
+                            openshift.withProject("${CICD_DEV}")
                             {
                                 //def myapp = 
                                 openshift.newApp ("${GIT_URL}#${BRANCH}", "--context-dir=${CONTEXT_DIR}", "-p BUILD_NUMBER=${CURR_BUILD}")
