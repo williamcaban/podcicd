@@ -28,7 +28,8 @@ pipeline {
                         openshift.withCluster() {
                             openshift.withProject(${CICD_DEV})
                             {
-                                def myapp = openshift.newApp ("${GIT_URL}#${BRANCH}", "--context-dir=${CONTEXT_DIR}", "-p BUILD_NUMBER=${CURR_BUILD}")
+                                //def myapp = 
+                                openshift.newApp ("${GIT_URL}#${BRANCH}", "--context-dir=${CONTEXT_DIR}", "-p BUILD_NUMBER=${CURR_BUILD}")
 
                             } // project
                         } // cluster
