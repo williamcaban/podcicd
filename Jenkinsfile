@@ -100,7 +100,7 @@ pipeline {
                             openshift.withProject("${CICD_STAGE}") {
                                 echo "Tag new image for staging"
                                 openshift.tag("${CICD_DEV}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}")
-                                openshift.tag("${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_STAGE}/${APP_NAME}:latest")
+                                //openshift.tag("${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_STAGE}/${APP_NAME}:latest")
                                 echo "Deploying to project: ${openshift.project()}"
                                 def myStagingApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
@@ -127,7 +127,7 @@ pipeline {
 
                                 def myProdApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
-                                    "--name=${APP_NAME}:v${BUILD_NUMBER}", 
+                                    "--name=${APP_NAME}-v${BUILD_NUMBER}", 
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
