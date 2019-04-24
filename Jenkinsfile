@@ -11,8 +11,6 @@ pipeline {
         GIT_REPO    = "https://github.com/williamcaban/podcicd.git"
         GIT_BRANCH  = "master"
         CONTEXT_DIR = "myapp"
-        CURR_BUILD  = "${currentBuild.number}"
-        PREV_BUILD  = "${currentBuild.previousBuild.getNumber()}"
 
         CICD_PRJ    = "cicd"
         CICD_DEV    = "${CICD_PRJ}"+"-dev"
@@ -66,7 +64,7 @@ pipeline {
                                 if (openshift.selector("bc",APP_NAME).exists()) {
                                     echo "Using existing BuildConfig. Running new Build"
                                     def bc = openshift.startBuild(APP_NAME)
-                                    openshift.set("env dc/${APP_NAME} BUILD_NUMBER=${CURR_BUILD}")
+                                    openshift.set("env dc/${APP_NAME} BUILD_NUMBER=${BUILD_NUMBER}")
                                     // output build logs to the Jenkins conosole
                                     echo "Logs from build"
                                     def result = bc.logs('-f')
@@ -80,7 +78,7 @@ pipeline {
                                         "${GIT_REPO}#${GIT_BRANCH}", 
                                         "--name=${APP_NAME}", 
                                         "--context-dir=${CONTEXT_DIR}", 
-                                        "-e BUILD_NUMBER=${CURR_BUILD}", 
+                                        "-e BUILD_NUMBER=${BUILD_NUMBER}", 
                                         "-e BUILD_ENV=${openshift.project()}"
                                         )
                                     echo "new-app myNewApp ${myNewApp.count()} objects named: ${myNewApp.names()}"
@@ -137,7 +135,7 @@ pipeline {
                                 def myStagingApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
                                     "--name=${APP_NAME}-v${BUILD_NUMBER}", 
-                                    "-e BUILD_NUMBER=${CURR_BUILD}", 
+                                    "-e BUILD_NUMBER=${BUILD_NUMBER}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
                                 myStagingApp.narrow("svc").expose()
@@ -163,7 +161,7 @@ pipeline {
                                 def myProdApp = openshift.newApp(
                                     "${APP_NAME}:v${BUILD_NUMBER}",
                                     "--name=${APP_NAME}-v${BUILD_NUMBER}", 
-                                    "-e BUILD_NUMBER=${CURR_BUILD}", 
+                                    "-e BUILD_NUMBER=${BUILD_NUMBER}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
 
