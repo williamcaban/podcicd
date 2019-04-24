@@ -10,7 +10,7 @@ pipeline {
         GIT_URL     = "https://github.com/williamcaban/podcicd.git"
         GIT_BRANCH  = "master"
         CONTEXT_DIR = "myapp"
-        CURR_BUILD  = "${currentBUild.number}"
+        CURR_BUILD  = "${currentBuild.number}"
         PREV_BUILD  = "${currentBuild.previousBuild.getNumber()}"
         BUILD_CAUSE = "${currentBuild.rawBuild.getCauses()}"
 
