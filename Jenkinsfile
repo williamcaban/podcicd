@@ -152,6 +152,14 @@ pipeline {
                                     "-e BUILD_NUMBER=${CURR_BUILD}", 
                                     "-e BUILD_ENV=${openshift.project()}"
                                 )
+                                def myProdAppBC = myProdApp.narrow('bc')
+                                def myProdAppBuilds = myProdAppBC.related('builds')
+                                timeout (10){ // fail if the build takes more than 10 minutes
+                                    myProdAppBuilds.untilEach(1) { // wait for a minimum of 1 build
+                                        return it.object().status.phase == "Complete"
+                                    }
+                                }
+
                                 if (openshift.selector("route",APP_NAME).exists()){
                                     echo "Sending the traffic the the latest version"
                                     openshift.set("route-backends",APP_NAME,"${APP_NAME}-v${BUILD_NUMBER}")
