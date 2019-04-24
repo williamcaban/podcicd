@@ -7,19 +7,38 @@ pipeline {
     } //options
 
     environment {
-    MY_PIPELINE_VAR = "Demo Env Var from Pipeline"
+        GIT_URL     = "https://github.com/williamcaban/podcicd.git"
+        GIT_BRANCH  = "master"
+        CONTEXT_DIR = "myapp"
+        CURR_BUILD  = ${currentBUild.number}
+        PREV_BUILD  = ${currentBuild.previousBuild.getNumber()}
+        BUILD_CAUSE = ${currentBuild.rawBuild.getCauses()}
+
+        CICD_PRJ    = "cicd"
+        CICD_DEV    = ${CICD_PRJ}+"-dev"
+        CICD_PROD   = ${CICD_PRJ}+"-prod"
+        CICD_STAGE  = ${CICD_PRJ}+"-staging"
     }
 
     stages {
             stage('Build') {
                 steps {
                     echo "Sample Build stage ..."
-                }
-            } //stage 
+                    script {
+                        openshift.withCluster() {
+                            openshift.withProject(${CICD_DEV})
+                            {
+                                def myapp = openshift.newApp (${GIT_URL}#${BRANCH}, "--context-dir=${CONTEXT_DIR}", "-p BUILD_NUMBER=${CURR_BUILD}")
+
+                            } // project
+                        } // cluster
+                    } // script
+                } // steps
+            } //stage-build
 
             stage('Test') {
                 steps {
-                    echo "Sample Test stage with variable from Jenkinsfile >> ${MY_PIPELINE_VAR}"
+                    echo "Sample Test stage ..."
                 }
             } //stage 
             
