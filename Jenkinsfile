@@ -19,6 +19,7 @@ pipeline {
         CICD_DEV    = "${CICD_PRJ}"+"-dev"
         CICD_PROD   = "${CICD_PRJ}"+"-prod"
         CICD_STAGE  = "${CICD_PRJ}"+"-staging"
+        SVC_PORT    = 8080
     }
 
     stages {
@@ -84,31 +85,47 @@ pipeline {
                     script {
                         openshift.withCluster() {
                                 openshift.withProject() {
-                                    def check_service = openshift.verifyService("${APP_NAME}")
-                                    if (check_service) {
-                                        echo "Able to connect to ${APP_NAME}"
-                                    } else {
-                                        echo "Unable to connect to ${APP_NAME}"
-                                        currentBuild.result = "TEST_FAIL"
-                                        return
-                                    }
+                                    echo sh (script: "curl -I ${APP_NAME}.${openshift.project()}.svc:${SVC_PORT}/healthz", returnStdout: true)
                                 } // withProject
                         } // withCluster
                     } // script
                 } // steps
             } //stage 
             
-            stage('Promote') {
+            stage('Promote to Staging') {
                 steps {
-                    echo "Sample Promote stage with OpenShift Client Plugin DSL"
+                    echo "Setup for Staging"
                     script {
                         openshift.withCluster() {
-                            openshift.withProject() {
-                                echo "Using project: ${openshift.project()}"
+                            openshift.withProject("${CICD_STAGE}") {
+                                echo "Tag new image for staging"
+                                openshift.tag("${CICD_DEV}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}")
+                                openshift.tag("${CICD_STAGE}/${APP_NAME}:v${BUILD_NUMBER}", "${CICD_STAGE}/${APP_NAME}:latest")
+                                echo "Deploying to project: ${openshift.project()}"
+                                def myStagingApp = openshift.newApp(
+                                    "${APP_NAME}:v${BUILD_NUMBER}",
+                                    "--name=${APP_NAME}-${BUILD_NUMBER}", 
+                                    "-e BUILD_NUMBER=${CURR_BUILD}", 
+                                    "-e BUILD_ENV=${openshift.project()}"
+                                )
+                                myStagingApp.norrow("svc").expose()
                             }
                         }
                     } // script
                 } //steps 
+            } //stage
+
+            stage('Promote to Prod'){
+                steps {
+                    echo "Promote to production"
+                    script {
+                        openshift.withCluster() {
+                            openshift.withProject("${CICD_PROD}") {
+                                echo "Deploying to project: ${openshift.project()}"
+                            }
+                        }
+                    } // script
+                } // steps
             } //stage
 
     } // stages
