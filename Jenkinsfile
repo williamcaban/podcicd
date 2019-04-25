@@ -25,7 +25,7 @@ pipeline {
                     echo "Making sure CI/CD projects exist"
                     script {
                         openshift.withCluster() {
-                            echo "Current Pipeline environmentt"
+                            echo "Current Pipeline environment"
                             sh 'env | sort'
 
                             echo "Making sure required CI/CD projects exist"
@@ -147,7 +147,7 @@ pipeline {
 
             stage('Promote to Prod'){
                 steps {
-                    echo "Promote to production? Witing for human input"
+                    echo "Promote to production? Waiting for human input"
                     timeout(time:10, unit:'MINUTES'){
                         input message: "Promote to Production?", ok: "Promote"
                     }
