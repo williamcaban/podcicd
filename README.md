@@ -45,7 +45,7 @@ oc new-app https://github.com/williamcaban/podcicd.git -n cicd
 
 ```
 {"error":"server_error","error_description":"The authorization server encountered an unexpected condition that prevented it from fulfilling the request.","state":"N2UwMTkwNzktYjBmNi00"}
-``
+```
 Execute the following command and retry:
 
 ```
