@@ -9,6 +9,12 @@ oc new-project cicd-prod --description="CI/CD - Prod"
 oc new-project cicd-staging --description="CI/CD - Staging"
 ```
 
+- Create `jenkins` Service Account in the cicd project
+
+```
+oc create serviceaccount jenkins -n cicd
+```
+
 - Give `jenkins` Service Account `edit` access to the other Projects
 
 ```
@@ -34,6 +40,17 @@ oc new-app https://github.com/williamcaban/podcicd.git -n cicd
     `oc start-build podcicd -n cicd`
 
 - Monitor Jenkins logs and progress from the GUI at `Application Console` > Project `cicd` > Builds > Pipelines
+
+- Note: If you receive an error similar to the following when accessing the jenkins route:
+
+```
+{"error":"server_error","error_description":"The authorization server encountered an unexpected condition that prevented it from fulfilling the request.","state":"N2UwMTkwNzktYjBmNi00"}
+```
+Execute the following command and retry:
+
+```
+oc annotate sa jenkins serviceaccounts.openshift.io/oauth-redirectreference.jenkins='{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"jenkins"}}' -n cicd
+```
 
 # Cleaning the environment
 To clean/uninstall the demo delete the projects 
